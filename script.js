@@ -175,6 +175,7 @@ function generateTestNumber() {
 function sendResultsToGoogle(testNumber) {
   const url = "https://script.google.com/macros/s/AKfycbzbGRJdN7yuhETR67zh7VonkV6dI9XrJ5T6ZXSpAHWCO3Gulq2gbE2xuYD0V_8lBrek/exec";
   const attemptNumber = currentAttemptNumber || Number(localStorage.getItem(ATTEMPT_COUNTER_KEY) || "1");
+  const attemptLabel = `Пересдано ${attemptNumber} раз`;
   const dataToSend = {
     "1": nickname || "",
     "2": answers[0] || "",
@@ -191,7 +192,7 @@ function sendResultsToGoogle(testNumber) {
     "13": answers[11] || "",
     "14": answers[12] || "",
     "15": hasTabSwitch ? 1 : '0',
-    "16": attemptNumber,
+    "16": attemptLabel,
     "17": formatDateTime(new Date()),
     "18": testNumber
   };
