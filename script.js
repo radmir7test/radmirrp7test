@@ -128,7 +128,8 @@ function toggleRegisterLink() {
 
   const state = loadState();
   const isBlocked = Boolean(state.blockUntil && Number(state.blockUntil) > Date.now());
-  link.style.display = currentStep === 0 && !isBlocked ? "inline-block" : "none";
+  const showOnResultScreen = isBlocked && (state.reason === "failed" || state.reason === "completed");
+  link.style.display = currentStep === 0 || showOnResultScreen ? "inline-block" : "none";
 }
 
 function setHeaderTitle(title) {
@@ -240,6 +241,7 @@ function renderBlockedScreen(state) {
       </div>
     `;
     nextButton.style.display = "none";
+    toggleRegisterLink();
     return;
   }
 
@@ -256,6 +258,7 @@ function renderBlockedScreen(state) {
     </div>
   `;
   nextButton.style.display = "none";
+  toggleRegisterLink();
 }
 
 function startLockedView(state) {
