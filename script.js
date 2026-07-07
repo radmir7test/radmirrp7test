@@ -175,7 +175,7 @@ function generateTestNumber() {
 function sendResultsToGoogle(testNumber) {
   const url = "https://script.google.com/macros/s/AKfycbzbGRJdN7yuhETR67zh7VonkV6dI9XrJ5T6ZXSpAHWCO3Gulq2gbE2xuYD0V_8lBrek/exec";
   const attemptNumber = currentAttemptNumber || Number(localStorage.getItem(ATTEMPT_COUNTER_KEY) || "1");
-  const attemptLabel = `Пересдано ${attemptNumber} раз`;
+  const attemptLabel = attemptNumber === 1 ? "тест пройден с первого раза" : `Пересдано ${attemptNumber} раз`;
   const dataToSend = {
     "1": nickname || "",
     "2": answers[0] || "",
