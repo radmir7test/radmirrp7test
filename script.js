@@ -207,6 +207,7 @@ function renderBlockedScreen(state) {
       <p>${description}</p>
       <div class="result-meta">Осталось: ${formatCountdown(Math.max(0, blockUntil - Date.now()))}</div>
       <p><strong>Дата:</strong> ${formatDateTime(new Date(blockUntil))}</p>
+      ${state.testNumber ? `<p><strong>Номер теста:</strong> ${state.testNumber}</p>` : ""}
     </div>
   `;
   nextButton.style.display = "none";
@@ -309,11 +310,11 @@ function finishTest() {
   `;
   nextButton.style.display = "none";
   sendResultsToGoogle(testNumber);
-  startLockedView({ status: "blocked", blockUntil, reason: "completed", testNumber });
+
 }
 
 function handleTabViolation() {
-  if (!testActive || violationCooldown) {
+  if (!testActive || violationCooldown || currentStep === 0) {
     return;
   }
 

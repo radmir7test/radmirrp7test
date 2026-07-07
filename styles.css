@@ -276,15 +276,58 @@ input[type="text"]:focus {
 }
 
 @media (max-width: 640px) {
-  .quiz-card {
-    padding: 1.2rem;
+  body {
+    font-size: 15px;
   }
 
-  .actions {
-    justify-content: stretch;
+  .app-shell {
+    padding: 0.8rem;
+  }
+
+  .quiz-card {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .quiz-card__header h1 {
+    font-size: 1.3rem;
+  }
+
+  .subtitle,
+  .rules-list,
+  .modal-card p,
+  .result-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .rules-card,
+  .question-card,
+  .result-card,
+  .modal-card {
+    padding: 0.95rem;
+    border-radius: 16px;
   }
 
   .btn {
     width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  textarea,
+  input[type="text"] {
+    min-height: 90px;
+    padding: 0.8rem 0.9rem;
+    font-size: 0.95rem;
+  }
+
+  .option {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    justify-content: stretch;
   }
 }
