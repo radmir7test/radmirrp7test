@@ -348,6 +348,7 @@ function showWarningModal() {
 function failTest() {
   testActive = false;
   const blockUntil = Date.now() + LOCK_DURATION_MS;
+  localStorage.removeItem(ATTEMPT_COUNTER_KEY);
   saveState({ status: "blocked", blockUntil, reason: "failed", violationCount: 1 });
   startLockedView({ status: "blocked", blockUntil, reason: "failed", violationCount: 1 });
 }
