@@ -10,6 +10,7 @@
   --danger: #ff6b6b;
   --border: rgba(255, 255, 255, 0.14);
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  
 }
 
 * {
@@ -26,6 +27,10 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  margin: 0;
+  padding: 0;
 }
 
 .background-glow {
