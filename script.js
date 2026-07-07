@@ -21,7 +21,7 @@ const questions = [
   },
   {
     type: "textarea",
-    title: "5. Что запрещено делать в строю? Как минимум 5 примеров*",
+    title: "5. Что запрещено делать в строю? Как минимум 5 примеров.",
     placeholder: "Перечислите 5 и более запретов..."
   },
   {
@@ -61,7 +61,7 @@ const questions = [
   },
   {
     type: "textarea",
-    title: "12. Распишите ценовую политику*",
+    title: "12. Распишите ценовую политику.",
     placeholder: "Напишите подробно..."
   },
   {
@@ -77,6 +77,7 @@ const questions = [
 ];
 
 const STORAGE_KEY = "quizState";
+const ATTEMPT_COUNTER_KEY = "quizAttemptCount";
 const LOCK_DURATION_MS = 20 * 60 * 1000;
 
 const stepContent = document.getElementById("stepContent");
@@ -85,6 +86,7 @@ const progressBar = document.getElementById("progressBar");
 
 let currentStep = 0;
 let nickname = "";
+let currentAttemptNumber = 0;
 const answers = [];
 const totalSteps = questions.length + 1;
 let violationCount = 0;
@@ -118,6 +120,24 @@ function updateProgress() {
   progressBar.style.width = `${percent}%`;
 }
 
+function toggleRegisterLink() {
+  const link = document.getElementById("registerLink");
+  if (!link) {
+    return;
+  }
+
+  const state = loadState();
+  const isBlocked = Boolean(state.blockUntil && Number(state.blockUntil) > Date.now());
+  link.style.display = currentStep === 0 && !isBlocked ? "inline-block" : "none";
+}
+
+function setHeaderTitle(title) {
+  const titleElement = document.querySelector('.quiz-card__header h3');
+  if (titleElement) {
+    titleElement.textContent = title;
+  }
+}
+
 function updateButtonState() {
   let canProceed = false;
 
@@ -141,12 +161,20 @@ function formatDateTime(date) {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
+function startAttempt() {
+  const nextAttemptNumber = Number(localStorage.getItem(ATTEMPT_COUNTER_KEY) || "0") + 1;
+  currentAttemptNumber = nextAttemptNumber;
+  localStorage.setItem(ATTEMPT_COUNTER_KEY, String(nextAttemptNumber));
+  return nextAttemptNumber;
+}
+
 function generateTestNumber() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 function sendResultsToGoogle(testNumber) {
   const url = "https://script.google.com/macros/s/AKfycbzbGRJdN7yuhETR67zh7VonkV6dI9XrJ5T6ZXSpAHWCO3Gulq2gbE2xuYD0V_8lBrek/exec";
+  const attemptNumber = currentAttemptNumber || Number(localStorage.getItem(ATTEMPT_COUNTER_KEY) || "1");
   const dataToSend = {
     "1": nickname || "",
     "2": answers[0] || "",
@@ -162,8 +190,8 @@ function sendResultsToGoogle(testNumber) {
     "12": answers[10] || "",
     "13": answers[11] || "",
     "14": answers[12] || "",
-    "15": hasTabSwitch ? 1 : 0,
-    "16": "Нет",
+    "15": hasTabSwitch ? 1 : '0',
+    "16": attemptNumber,
     "17": formatDateTime(new Date()),
     "18": testNumber
   };
@@ -196,14 +224,30 @@ function formatCountdown(remainingMs) {
 function renderBlockedScreen(state) {
   const blockUntil = Number(state.blockUntil || 0);
   const isCompleted = state.reason === "completed";
-  const title = isCompleted ? "Тест завершён" : "Тест провален";
-  const description = isCompleted
-    ? "Следующий тест вы сможете сдать через 20 минут."
-    : "Следующий тест вы сможете сдать через 20 минут.";
+  const headerTitle = "Повышение с Интерна[1] до Фельдшера[2]";
+  setHeaderTitle(headerTitle);
+
+  if (isCompleted) {
+    const completedAt = Number(state.completedAt || Date.now());
+    stepContent.innerHTML = `
+      <div class="result-card">
+        <h2 style="color: #41a85f; text-align: center;">Тест пройден!</h2>
+        <p>Вы прошли тест, сделайте скриншот этого окна с результатами. Затем прикрепите этот скриншот к вашему отчету и ожидайте решения.</p>
+        <p><strong>Пересдать тест можно через:</strong> ${formatCountdown(Math.max(0, blockUntil - Date.now()))}</p>
+        <p><strong>Дата:</strong> ${formatDateTime(new Date(completedAt))}</p>
+        <p><strong>Номер теста:</strong> ${state.testNumber || ""}</p>
+      </div>
+    `;
+    nextButton.style.display = "none";
+    return;
+  }
+
+  const title = "Тест провален!";
+  const description = "Следующий тест вы сможете сдать через 20 минут.";
 
   stepContent.innerHTML = `
     <div class="result-card">
-      <h2>${title}</h2>
+      <h2 style="color: #e83728; text-align: center;">${title}</h2>
       <p>${description}</p>
       <div class="result-meta">Осталось: ${formatCountdown(Math.max(0, blockUntil - Date.now()))}</div>
       <p><strong>Дата:</strong> ${formatDateTime(new Date(blockUntil))}</p>
@@ -244,6 +288,20 @@ function protectInput(field) {
   field.addEventListener("cut", (event) => event.preventDefault());
 }
 
+function setupAutoGrow(textarea) {
+  if (!textarea) {
+    return;
+  }
+
+  const resize = () => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(110, textarea.scrollHeight)}px`;
+  };
+
+  textarea.addEventListener("input", resize);
+  requestAnimationFrame(resize);
+}
+
 function applyCopyProtection() {
   document.addEventListener("copy", (event) => event.preventDefault());
   document.addEventListener("cut", (event) => event.preventDefault());
@@ -268,9 +326,9 @@ function showWarningModal() {
   overlay.className = "modal-overlay";
   overlay.innerHTML = `
     <div class="modal-card">
-      <h2>Внимание!</h2>
+      <h2 style='text-align: center;'>Внимание!</h2>
       <p>Во время прохождения теста запрещено открывать другие приложения!</p>
-      <p>При следующей попытке вы автоматически провалите тест!</p>
+      <p style='font-weight: bold;'>При следующей попытке вы автоматически провалите тест!</p>
       <div class="actions">
         <button class="btn btn--primary modal-close">Ок</button>
       </div>
@@ -299,18 +357,10 @@ function finishTest() {
   progressBar.style.width = "100%";
   const blockUntil = Date.now() + LOCK_DURATION_MS;
   const testNumber = generateTestNumber();
-  saveState({ status: "blocked", blockUntil, reason: "completed", testNumber });
-  stepContent.innerHTML = `
-    <div class="result-card">
-      <h2>Тест завершён</h2>
-      <p>Вы прошли тест, сделайте скриншот этого окна с результатами. Затем прикрепите этот скриншот к вашему отчету и ожидайте решения.</p>
-      <p><strong>Дата и время:</strong> ${formatDateTime(new Date())}</p>
-      <p><strong>Номер теста:</strong> ${testNumber}</p>
-    </div>
-  `;
+  saveState({ status: "blocked", blockUntil, reason: "completed", testNumber, completedAt: Date.now() });
+  renderBlockedScreen({ status: "blocked", blockUntil, reason: "completed", testNumber, completedAt: Date.now() });
   nextButton.style.display = "none";
   sendResultsToGoogle(testNumber);
-
 }
 
 function handleTabViolation() {
@@ -348,6 +398,9 @@ function handleTabViolation() {
 function renderStep() {
   updateProgress();
   updateButtonState();
+  toggleRegisterLink();
+
+  setHeaderTitle(currentStep === 0 ? 'Повышение с Интерна[1] до Фельдшера[2]' : getCurrentQuestion()?.title || 'Повышение с Интерна[1] до Фельдшера[2]');
 
   if (currentStep === 0) {
     stepContent.innerHTML = `
@@ -373,6 +426,7 @@ function renderStep() {
 
     const nicknameInput = document.getElementById("nickname");
     protectInput(nicknameInput);
+    setupAutoGrow(nicknameInput);
     nicknameInput.addEventListener("input", (event) => {
       nickname = event.target.value;
       updateButtonState();
@@ -388,7 +442,6 @@ function renderStep() {
 
   let content = `
     <div class="question-card">
-      <h2>${question.title}</h2>
   `;
 
   if (question.type === "textarea") {
@@ -420,6 +473,7 @@ function renderStep() {
 
   const answerField = document.getElementById("answerField");
   protectInput(answerField);
+  setupAutoGrow(answerField);
   if (answerField) {
     answerField.addEventListener("input", (event) => {
       answers[currentStep - 1] = event.target.value;
@@ -440,6 +494,7 @@ function nextStep() {
     if (!nickname.trim()) {
       return;
     }
+    startAttempt();
   } else {
     const currentAnswer = answers[currentStep - 1];
     if (!currentAnswer || !String(currentAnswer).trim()) {
@@ -456,9 +511,19 @@ function nextStep() {
 }
 
 function init() {
+  if (localStorage.getItem("administrator") === "true") {
+    window.location.href = "admin.html";
+    return;
+  }
+
   const state = loadState();
   warningAcknowledged = Boolean(state.warningAcknowledged);
   if (state.blockUntil && Number(state.blockUntil) > Date.now()) {
+    if (state.reason === "completed") {
+      progressBar.style.width = "100%";
+    }
+    setHeaderTitle("Повышение с Интерна[1] до Фельдшера[2]");
+    toggleRegisterLink();
     startLockedView(state);
     return;
   }

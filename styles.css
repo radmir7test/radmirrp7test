@@ -72,6 +72,26 @@ body {
   font-size: clamp(1.6rem, 3vw, 2.2rem);
 }
 
+.quiz-card__top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.top-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(98, 215, 176, 0.35);
+  border-radius: 999px;
+  background: rgba(98, 215, 176, 0.12);
+}
+
+.top-link:hover {
+  opacity: 0.9;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.8rem;
@@ -149,7 +169,8 @@ input[type="text"] {
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 16px;
   padding: 0.95rem 1rem;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   font: inherit;
   color: var(--text);
   background: rgba(255, 255, 255, 0.04);
@@ -289,8 +310,14 @@ input[type="text"]:focus {
     border-radius: 18px;
   }
 
-  .quiz-card__header h1 {
-    font-size: 1.3rem;
+  .quiz-card__header h3 {
+    font-size: 1.1rem;
+  }
+
+  .question-card h2,
+  .rules-card h2,
+  .result-card h2 {
+    font-size: 0.95rem;
   }
 
   .subtitle,

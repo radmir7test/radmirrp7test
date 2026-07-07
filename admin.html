@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админ-панель</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      overflow-x: hidden;
+    }
+
+    .admin-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .admin-card {
+      width: min(860px, 100%);
+      background: rgba(13, 24, 39, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      padding: 2rem;
+      backdrop-filter: blur(24px);
+    }
+
+    .admin-card__title {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      text-align: center;
+    }
+
+    .admin-card__subtitle {
+      margin: 0 0 1.2rem;
+      color: #9fb4d0;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .admin-form {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .admin-form textarea {
+      min-height: 56px;
+      resize: none;
+      overflow: hidden;
+      border-radius: 16px;
+      padding: 0.9rem 1rem;
+      font: inherit;
+      color: #f5f7ff;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .admin-form textarea:focus {
+      outline: none;
+      border-color: #62d7b0;
+      transform: translateY(-1px);
+    }
+
+    .admin-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.8rem;
+      margin-top: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .btn--secondary {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .admin-result {
+      margin-top: 0.8rem;
+      color: #62d7b0;
+      text-align: center;
+      font-weight: 600;
+      min-height: 1.4rem;
+    }
+
+    .results-list {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+
+    .result-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 1rem;
+    }
+
+    .result-item h3 {
+      margin: 0 0 0.6rem;
+      font-size: 1rem;
+      color: #f5f7ff;
+    }
+
+    .answer-text {
+      margin: 0.25rem 0 0;
+      color: #dce7f5;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .option-list {
+      display: grid;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .option--correct {
+      background: rgba(65, 168, 95, 0.16);
+      border-color: rgba(65, 168, 95, 0.45);
+    }
+
+    .option--wrong {
+      background: rgba(232, 55, 40, 0.16);
+      border-color: rgba(232, 55, 40, 0.4);
+    }
+
+    .option__icon {
+      font-size: 1rem;
+      font-weight: 700;
+      width: 1.2rem;
+      text-align: center;
+    }
+
+    .option__text {
+      color: #f5f7ff;
+    }
+
+    .correct-answer {
+      margin-top: 0.55rem;
+      color: #62d7b0;
+      font-weight: 600;
+    }
+
+    .meta-block {
+      margin-top: 0.5rem;
+      color: #9fb4d0;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 640px) {
+      .admin-card {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .admin-actions {
+        justify-content: center;
+      }
+
+      .admin-actions .btn {
+        width: 100%;
+      }
+
+      .result-item {
+        padding: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-glow glow-1"></div>
+  <div class="background-glow glow-2"></div>
+
+  <main class="admin-shell">
+    <section class="admin-card">
+        <center>
+            <h2 id="adminGreeting">Вы вошли как</h2>
+        </center>
+      <p class="admin-card__subtitle">Введите NickName игрока или номер теста</p>
+
+      <form id="adminForm" class="admin-form">
+        <textarea id="searchInput" rows="1" placeholder="Введите никнейм или номер теста..."></textarea>
+        <div class="admin-actions">
+          <a class="btn btn--secondary" href="index.html">Выйти</a>
+          <button type="submit" class="btn btn--primary">Отправить</button>
+        </div>
+        <p id="adminResult" class="admin-result"></p>
+      </form>
+
+      <div id="resultsList" class="results-list"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("adminForm");
+    const result = document.getElementById("adminResult");
+    const resultsList = document.getElementById("resultsList");
+    const adminGreeting = document.getElementById("adminGreeting");
+
+    const adminName = localStorage.getItem("adminName") || "Администратор";
+    const adminStatus = localStorage.getItem("adminStatus") || "";
+    adminGreeting.textContent = `Вы вошли как ${adminName}${adminStatus ? `[${adminStatus}]` : ""}`;
+
+    const questions = [
+      { title: "1. Введите свой NickName", type: "text" },
+      { title: "2. Расшифровка аббревиатуры \"МЗ\"?", type: "text" },
+      { title: "3. Где разрешено стоять в афк?", type: "radio", options: ["Раздевалка/Гардероб", "Крыша", "Кабинет", "На задней парковке"], correct: "Раздевалка/Гардероб" },
+      { title: "4. Какой максимальный срок разрешено провести во сне в неположенном месте, чтобы это не считалось нарушением?", type: "radio", options: ["3 минуты", "5 минут", "афк можно только в специально отведенной зоне", "2 минуты"], correct: "3 минуты" },
+      { title: "5. Что запрещено делать в строю? Как минимум 5 примеров.", type: "text" },
+      { title: "6. Можно ли в рабочее время кататься в форме по городу на ЛТС? Если нет, то какое следует наказание?", type: "text" },
+      { title: "7. Кто старше по иерархии \"Губернатор Области\" или \"Глав. врач\"?", type: "radio", options: ["Губернатор", "Глав Врач"], correct: "Губернатор" },
+      { title: "8. Какие категории аксессуаров разрешено носить сотруднику во время работы согласно исключениям в пункте 3.9? Перечислите три категории.", type: "text" },
+      { title: "9. Какое из следующих действий сотрудника МЗ является прямым нарушением правил?", type: "radio", options: ["а) Отказ выдать медицинскую карту без опроса пациента.", "б) Проведение смены пола в палате, а не на операционном столе.", "в) Лечение пациента на улице возле больницы.", "г) Все перечисленные варианты."], correct: "в) Лечение пациента на улице возле больницы." },
+      { title: "10. Какое наказание грозит сотруднику за отказ в оказании медицинских услуг из-за личной неприязни к пациенту?", type: "text" },
+      { title: "11. В каких двух случаях сотруднику МЗ разрешено выехать за пределы больницы в одиночку?", type: "text" },
+      { title: "12. Распишите ценовую политику.", type: "text" },
+      { title: "13. Что запрещено делать сотрудникам в форме? (Написать 5 пунктов):", type: "text" },
+      { title: "14. Что сотрудник обязан сделать, если не может явиться на всеобщее построение?", type: "text" }
+    ];
+
+    const url = "https://script.google.com/macros/s/AKfycbwNMHzmvHSoBjQYyo5bBK_ZhVDA3KvgEGnCBUIMY6ndWVWczerM_dxrEuCIztvvzNNDrg/exec";
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;");
+    }
+
+    function formatDateValue(value) {
+      if (!value) {
+        return "";
+      }
+
+      const text = String(value).trim();
+      if (!text) {
+        return "";
+      }
+
+      const date = new Date(text);
+      if (Number.isNaN(date.getTime())) {
+        return text;
+      }
+
+      const pad = (number) => String(number).padStart(2, "0");
+      return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}.${pad(date.getMinutes())}.${pad(date.getSeconds())}`;
+    }
+
+    function renderResults(data) {
+      resultsList.innerHTML = "";
+
+      if (!Array.isArray(data) || data.length < 18) {
+        result.textContent = "Данные не найдены";
+        result.style.color = "#ff6b6b";
+        return;
+      }
+
+      const answers = data;
+
+      questions.forEach((question, index) => {
+        const answer = answers[index] ?? "";
+        const item = document.createElement("div");
+        item.className = "result-item";
+
+        if (question.type === "radio") {
+          const selected = String(answer || "").trim();
+          const isCorrect = selected === question.correct;
+          let optionsHtml = "";
+
+          question.options.forEach((option) => {
+            const isSelected = selected === option;
+            const isCorrectOption = question.correct === option;
+            let icon = "";
+            let className = "option";
+
+            if (isSelected && isCorrectOption) {
+              icon = "✓";
+              className += " option--correct";
+            } else if (isSelected && !isCorrectOption) {
+              icon = "✕";
+              className += " option--wrong";
+            }
+
+            optionsHtml += `
+              <div class="${className}">
+                <span class="option__icon">${icon}</span>
+                <span class="option__text">${escapeHtml(option)}</span>
+              </div>
+            `;
+          });
+
+          item.innerHTML = `
+            <h3>${escapeHtml(question.title)}</h3>
+            <div class="option-list">${optionsHtml}</div>
+            <p class="correct-answer">Правильный ответ: ${escapeHtml(question.correct)}</p>
+          `;
+        } else {
+          item.innerHTML = `
+            <h3>${escapeHtml(question.title)}</h3>
+            <p class="answer-text">${escapeHtml(answer)}</p>
+          `;
+        }
+
+        resultsList.appendChild(item);
+      });
+
+      const footer = document.createElement("div");
+      footer.className = "result-item";
+      footer.innerHTML = `
+        <h3>Дополнительная информация</h3>
+        <p class="meta-block">Попыток скопировать (копи-паст): ${escapeHtml(answers[14] ?? "")}</p>
+        <p class="meta-block">Тест пересдан или нет: ${escapeHtml(answers[15] ?? "")}</p>
+        <p class="meta-block">Дата прохождения: ${escapeHtml(formatDateValue(data[16] ?? ""))}</p>
+        <p class="meta-block">Номер теста: ${escapeHtml(answers[17] ?? "")}</p>
+      `;
+      resultsList.appendChild(footer);
+    }
+
+    document.querySelector('.btn--secondary').addEventListener('click', (event) => {
+      event.preventDefault();
+      localStorage.removeItem("administrator");
+      localStorage.removeItem("adminName");
+      localStorage.removeItem("adminStatus");
+      window.location.href = "index.html";
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const value = document.getElementById("searchInput").value.trim();
+
+      if (!value) {
+        result.textContent = "Введите данные для поиска";
+        result.style.color = "#ff6b6b";
+        resultsList.innerHTML = "";
+        return;
+      }
+
+      result.textContent = "Идёт поиск...";
+      result.style.color = "#62d7b0";
+      resultsList.innerHTML = "";
+
+      fetch(`${url}?search=${encodeURIComponent(value)}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "success") {
+            console.log("Найденные данные с A по R:", data.data);
+            renderResults(data.data);
+            result.textContent = "";
+            result.style.color = "#62d7b0";
+          } else {
+            console.log("Ошибка или не найдено:", data.message);
+            result.textContent = data.message || "Ошибка или не найдено";
+            result.style.color = "#ff6b6b";
+          }
+        })
+        .catch((error) => {
+          console.error("Ошибка запроса:", error);
+          result.textContent = "Ошибка запроса";
+          result.style.color = "#ff6b6b";
+        });
+    });
+  </script>
+</body>
+</html>

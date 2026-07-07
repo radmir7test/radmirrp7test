@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход в систему</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      overflow-x: hidden;
+    }
+
+    .auth-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .auth-card {
+      width: min(560px, 100%);
+      background: rgba(13, 24, 39, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      padding: 2rem;
+      backdrop-filter: blur(24px);
+    }
+
+    .auth-card__title {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      text-align: center;
+    }
+
+    .auth-card__subtitle {
+      margin: 0 0 1.2rem;
+      color: #9fb4d0;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .auth-form textarea {
+      min-height: 56px;
+      resize: none;
+      overflow: hidden;
+      border-radius: 16px;
+      padding: 0.9rem 1rem;
+      font: inherit;
+      color: #f5f7ff;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .auth-form textarea:focus {
+      outline: none;
+      border-color: #62d7b0;
+      transform: translateY(-1px);
+    }
+
+    .auth-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.8rem;
+      margin-top: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .auth-message {
+      min-height: 1.25rem;
+      margin: 0;
+      font-weight: 600;
+      text-align: center;
+      color: #62d7b0;
+    }
+
+    .btn--secondary {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 640px) {
+      .auth-card {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .auth-actions {
+        flex-direction: column;
+      }
+
+      .auth-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-glow glow-1"></div>
+  <div class="background-glow glow-2"></div>
+
+  <main class="auth-shell">
+    <section class="auth-card">
+      <h1 class="auth-card__title">Вход в систему</h1>
+      <p class="auth-card__subtitle">Введите данные для входа в систему.</p>
+
+      <form id="registerForm" class="auth-form">
+        <label class="label-text" for="login">Логин</label>
+        <textarea id="login" rows="1" placeholder="Введите логин..."></textarea>
+
+        <label class="label-text" for="password">Пароль</label>
+        <textarea id="password" rows="1" placeholder="Введите пароль..."></textarea>
+
+        <div class="auth-actions">
+          <a class="btn btn--secondary" href="index.html">Назад</a>
+          <button type="submit" class="btn btn--primary">Отправить</button>
+        </div>
+
+        <p id="message" class="auth-message"></p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const admins = {
+      Tim_Rayman: {
+        login: "K7M2Q9",
+        password: "X4R8LA",
+        status: 10,
+      },
+      Jamal_Dagestanovich: {
+        login: "N9V2TX",
+        password: "P3Z7KD",
+        status: 9,
+      },
+      Javad_Aliyev: {
+        login: "U9J5NB",
+        password: "F3R6ZD",
+        status: 9,
+      }
+    };
+
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const loginValue = document.getElementById("login").value.trim().toLowerCase();
+      const passwordValue = document.getElementById("password").value.trim();
+
+      const foundAdmin = Object.entries(admins).find(([, admin]) => {
+        return admin.login.toLowerCase() === loginValue && admin.password === passwordValue;
+      });
+
+      if (foundAdmin) {
+        const adminName = foundAdmin[0];
+        const adminStatus = foundAdmin[1].status ?? "";
+        message.textContent = foundAdmin[1].greeting || `Добро пожаловать, ${adminName}!`;
+        message.style.color = "#62d7b0";
+        localStorage.setItem("administrator", "true");
+        localStorage.setItem("adminName", adminName);
+        localStorage.setItem("adminStatus", String(adminStatus));
+        window.location.href = "admin.html";
+      } else {
+        message.textContent = "Неверный логин или пароль";
+        message.style.color = "#ff6b6b";
+      }
+    });
+  </script>
+</body>
+</html>
